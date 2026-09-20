@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${POS_DB_URL:jdbc:postgresql://localhost:5432/chahinaz_pos}
+    username: ${POS_DB_USER:chahinaz}
+    password: ${POS_DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: strict
+        secure: ${POS_SECURE_COOKIE:false}
+      timeout: 8h
