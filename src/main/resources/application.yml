@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${POS_DB_URL:jdbc:postgresql://localhost:5432/chahinaz_pos}
+    url: jdbc:postgresql://${POS_DB_HOST:localhost}:${POS_DB_PORT:5432}/${POS_DB_NAME:chahinaz_pos}
     username: ${POS_DB_USER:chahinaz}
     password: ${POS_DB_PASSWORD:}
   jpa:

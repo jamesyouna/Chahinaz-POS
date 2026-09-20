@@ -45,7 +45,7 @@ public class AdminController {
   public EmployeeView create(@Valid @RequestBody EmployeeInput input, Authentication auth) {
     String username = input.username().trim();
     if (employees.findByUsernameIgnoreCase(username).isPresent()) throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
-    Employee e = employees.save(new Employee(username,input.displayName().trim(),encoder.encode(input.password()),input.role()));
+    Employee e = employees.saveAndFlush(new Employee(username,input.displayName().trim(),encoder.encode(input.password()),input.role()));
     audit.record(actor(auth),"EMPLOYEE_CREATED","employee",e.id.toString(),null,e.role.name());
     return EmployeeView.of(e);
   }

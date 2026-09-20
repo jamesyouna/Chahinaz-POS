@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: chahinaz-pos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POS_DB_NAME:-chahinaz_pos}
+      POSTGRES_USER: ${POS_DB_USER:-chahinaz}
+      POSTGRES_PASSWORD: ${POS_DB_PASSWORD:?Set POS_DB_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${POS_DB_PORT:-5432}:5432"
+    volumes:
+      - chahinaz_pos_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  chahinaz_pos_data:

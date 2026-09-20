@@ -2,7 +2,28 @@
 
 ## Development PC
 
-Install JDK 21, Maven and PostgreSQL. Create a database/user, set the environment variables in `README.md`, run `mvn test` and `mvn package`, then start the JAR. Do not use the development database for store sales.
+Install JDK 21, Maven and Docker Desktop. In PowerShell from this project folder:
+
+```powershell
+Copy-Item .env.example .env
+notepad .env
+. .\scripts\Load-DevEnv.ps1
+docker compose --env-file .env up -d --wait postgres
+docker compose --env-file .env ps
+docker inspect --format '{{.State.Health.Status}}' chahinaz-pos-postgres
+mvn test
+mvn clean verify
+mvn spring-boot:run
+```
+
+Replace both password placeholders in `.env` before starting. It is Git-ignored. For another PowerShell window, load it again with `. .\scripts\Load-DevEnv.ps1`. Check PostgreSQL and Flyway with:
+
+```powershell
+docker compose --env-file .env logs postgres --tail 30
+docker exec chahinaz-pos-postgres psql -U chahinaz -d chahinaz_pos -c "SELECT version, description, success FROM flyway_schema_history;"
+```
+
+Database `chahinaz_pos` is bound to host port `5432` on `127.0.0.1`; container `chahinaz-pos-postgres` uses a persistent named volume. Stop with `docker compose --env-file .env stop postgres`; restart with `docker compose --env-file .env start postgres`. `docker compose --env-file .env down` removes the container but retains data. Do not use `down --volumes` as a routine stop command.
 
 ## Central production service
 
