@@ -107,3 +107,24 @@ Cash refunds require an open register. A Whish refund uses `WHISH_MANUAL` and re
 ```
 
 Run `mvn clean verify` with Docker Desktop running to execute all PostgreSQL integration and security tests for Phases 1–4.
+
+## Phase 5 management reporting
+
+Manager and Admin reporting endpoints are under `/api/management/reports`; tellers are denied by the existing management security rule. All endpoints accept optional inclusive `from` and `to` ISO dates, default to the latest 30 store-local dates, and reject reversed ranges or ranges longer than 366 days. `POS_STORE_TIMEZONE` configures calendar boundaries and defaults to `Asia/Beirut`. Admins may also validate and store the `pos.store_timezone` business setting; restart the application after changing the runtime timezone.
+
+Available reports are `/dashboard`, `/sales?grouping=hourly|daily|weekly|monthly`, `/products?sort=units|revenue|profit|lowest`, `/categories`, `/inventory`, `/payments`, `/registers`, `/returns`, `/discounts`, `/price-overrides`, `/voids`, and paginated `/inventory-movements?page=0&size=25`. Inventory accepts `stockStatus=out|low|approaching|in`, `categoryId`, and `active` filters. XLSX downloads are available at `/exports/sales`, `/exports/products`, `/exports/inventory`, `/exports/registers`, `/exports/returns`, `/exports/discounts`, and `/exports/overrides` with the same date parameters.
+
+Metric definitions:
+
+- Gross sales: completed-sale effective prices before discounts (`subtotal_usd`).
+- Net sales: completed-sale final totals after discounts and before returns.
+- Refunds: USD refunds plus LBP refunds converted using each original sale's exchange-rate snapshot.
+- Net revenue after refunds: net sales minus refunds.
+- COGS: item cost snapshots for sold quantities minus cost snapshots for returned quantities.
+- Gross profit: net revenue after refunds minus adjusted COGS. Gross margin is gross profit divided by net revenue after refunds; it is null when the denominator is zero.
+- Current inventory value: current product cost multiplied by current sellable stock. It is separate from historical COGS.
+- Payment totals retain USD cash, LBP cash, and manually confirmed Whish in separate fields. LBP is never silently added to USD.
+
+V5 snapshots product cost and category ID/name on every new sale item. This keeps profit and category history stable after catalogue changes. Existing rows are migration-filled from their current product/category values at upgrade time, which is the most accurate history available for sales created before snapshots existed. Returned revenue and cost are recognized in the report period containing the return.
+
+Sale history now uses the application-owned page shape: `content`, `page`, `size`, `totalElements`, and `totalPages`. XLSX exports use Apache POI, numeric cells for amounts and counts, restrained formatting, and neutralize leading formula characters in user-controlled text.

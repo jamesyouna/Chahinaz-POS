@@ -22,6 +22,6 @@ public class SaleController {
  @PostMapping("/{id}/discount") public ReceiptView saleDiscount(@PathVariable UUID id,@Valid @RequestBody DiscountInput in,Authentication a){return service.saleDiscount(id,in,a);}
  @PostMapping("/{id}/items/{itemId}/price-override") public ReceiptView override(@PathVariable UUID id,@PathVariable UUID itemId,@Valid @RequestBody PriceOverrideInput in,Authentication a){return service.overridePrice(id,itemId,in,a);}
  @GetMapping("/{id}") public ReceiptView get(@PathVariable UUID id,Authentication a){return service.get(id,a);}
- @GetMapping public Page<ReceiptView> history(@PageableDefault(size=25,sort="createdAt",direction=Sort.Direction.DESC) Pageable p,Authentication a){return service.history(p,a);}
+ @GetMapping public com.chahinaz.pos.reporting.PageResponse<ReceiptView> history(@PageableDefault(size=25,sort="createdAt",direction=Sort.Direction.DESC) Pageable p,Authentication a){return com.chahinaz.pos.reporting.PageResponse.of(service.history(p,a));}
  @GetMapping("/held") public java.util.List<ReceiptView> held(Authentication a){return service.held(a);}
 }

@@ -22,5 +22,6 @@ server:
         secure: ${POS_SECURE_COOKIE:false}
       timeout: 8h
 pos:
+  store-timezone: ${POS_STORE_TIMEZONE:Asia/Beirut}
   images:
     directory: ${POS_IMAGE_DIR:./data/product-images}

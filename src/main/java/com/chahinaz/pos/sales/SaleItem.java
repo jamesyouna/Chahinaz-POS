@@ -10,9 +10,14 @@ public class SaleItem {
  @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="product_id") public Product product;
  @Column(name="sku_snapshot",nullable=false,length=80) public String skuSnapshot;
  @Column(name="product_name_snapshot",nullable=false,length=200) public String productNameSnapshot;
+ @Column(name="cost_price_usd_snapshot",nullable=false,precision=12,scale=2) public BigDecimal costPriceUsdSnapshot;
+ @Column(name="category_id_snapshot",nullable=false) public UUID categoryIdSnapshot;
+ @Column(name="category_name_snapshot",nullable=false,length=120) public String categoryNameSnapshot;
  @Column(name="original_unit_price_usd",nullable=false,precision=12,scale=2) public BigDecimal originalUnitPriceUsd;
  @Column(name="effective_unit_price_usd",nullable=false,precision=12,scale=2) public BigDecimal unitPriceUsd;
  @Column(name="discount_usd",nullable=false,precision=12,scale=2) public BigDecimal discountUsd=BigDecimal.ZERO.setScale(2);
+ @Column(name="discount_applied_by") public UUID discountAppliedBy;
+ @Column(name="discount_applied_at") public java.time.Instant discountAppliedAt;
  @Column(name="override_reason",length=500) public String overrideReason;
  @Column(name="override_requested_by") public UUID overrideRequestedBy;
  @Column(name="override_approved_by") public UUID overrideApprovedBy;
@@ -20,7 +25,7 @@ public class SaleItem {
  @Column(nullable=false) public int quantity;
  @Column(name="line_total_usd",nullable=false,precision=12,scale=2) public BigDecimal lineTotalUsd;
  protected SaleItem() {}
- public SaleItem(Sale s,Product p,int q){id=UUID.randomUUID();sale=s;product=p;skuSnapshot=p.sku;productNameSnapshot=p.name;originalUnitPriceUsd=p.sellingPriceUsd;unitPriceUsd=originalUnitPriceUsd;setQuantity(q);}
+ public SaleItem(Sale s,Product p,int q){id=UUID.randomUUID();sale=s;product=p;skuSnapshot=p.sku;productNameSnapshot=p.name;costPriceUsdSnapshot=p.costPriceUsd;categoryIdSnapshot=p.getCategory().getId();categoryNameSnapshot=p.getCategory().getName();originalUnitPriceUsd=p.sellingPriceUsd;unitPriceUsd=originalUnitPriceUsd;setQuantity(q);}
  public void setQuantity(int q){quantity=q;recalculate();}
  public void recalculate(){lineTotalUsd=unitPriceUsd.multiply(BigDecimal.valueOf(quantity)).subtract(discountUsd).setScale(2);}
  public Product getProduct(){return product;}

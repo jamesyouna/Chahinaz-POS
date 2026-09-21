@@ -21,6 +21,8 @@ public class Sale {
  @Column(name="change_lbp",nullable=false,precision=18,scale=0) public BigDecimal changeLbp=BigDecimal.ZERO.setScale(0);
  @Column(name="total_discount_usd",nullable=false,precision=12,scale=2) public BigDecimal totalDiscountUsd=BigDecimal.ZERO.setScale(2);
  @Column(name="sale_discount_usd",nullable=false,precision=12,scale=2) public BigDecimal saleDiscountUsd=BigDecimal.ZERO.setScale(2);
+ @Column(name="discount_applied_by") public UUID discountAppliedBy;
+ @Column(name="discount_applied_at") public Instant discountAppliedAt;
  @Column(name="register_session_id") public UUID registerSessionId;
  @Column(name="voided_at") public Instant voidedAt;
  @Column(name="voided_by") public UUID voidedBy;

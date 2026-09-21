@@ -18,5 +18,6 @@ public class Category {
     createdAt = Instant.now(); updatedAt = createdAt;
   }
   public UUID getId() { return id; }
+  public String getName() { return name; }
   public boolean isActive() { return active; }
 }
