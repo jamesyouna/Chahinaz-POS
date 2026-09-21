@@ -128,3 +128,29 @@ Metric definitions:
 V5 snapshots product cost and category ID/name on every new sale item. This keeps profit and category history stable after catalogue changes. Existing rows are migration-filled from their current product/category values at upgrade time, which is the most accurate history available for sales created before snapshots existed. Returned revenue and cost are recognized in the report period containing the return.
 
 Sale history now uses the application-owned page shape: `content`, `page`, `size`, `totalElements`, and `totalPages`. XLSX exports use Apache POI, numeric cells for amounts and counts, restrained formatting, and neutralize leading formula characters in user-controlled text.
+
+## Phase 6 POS frontend
+
+The React, TypeScript, and Vite application is in `frontend/`. It uses the Spring Boot session cookie and `XSRF-TOKEN` cookie; the centralized client sends credentials and `X-XSRF-TOKEN` on modifying requests. Passwords and authentication tokens are never stored in browser storage. HTTP 401 responses return the employee to login, 403 responses are presented as authorization errors, and network failures never produce a local completed sale.
+
+Development commands, in separate terminals:
+
+```powershell
+. .\scripts\Load-DevEnv.ps1
+mvn spring-boot:run
+cd frontend
+npm install
+npm run dev
+```
+
+Vite proxies `/api`, `/login`, and `/logout` to `http://localhost:8080`, preserving same-origin cookie and CSRF behavior without enabling broad CORS. Production assets are generated with `npm run build` in `frontend/dist`; Phase 7 will package those assets with the backend so the store does not depend on the Vite development server.
+
+The application provides a branded login, role-aware shell, touchscreen Sell workspace, backend-authoritative cart, held-sale resume flow, register opening and closing, USD/LBP/mixed/Whish checkout, receipt history and 80mm browser print styles, product management, inventory status, management KPIs, XLSX downloads, and Admin employee status controls. Teller navigation excludes cost, profit, reporting, catalogue management, and employee administration screens; backend authorization remains authoritative.
+
+Frontend verification:
+
+```powershell
+cd frontend
+npm test
+npm run build
+```

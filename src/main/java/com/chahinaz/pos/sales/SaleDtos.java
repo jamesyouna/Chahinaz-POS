@@ -19,5 +19,6 @@ public final class SaleDtos {
  public record ReceiptView(UUID id,String saleNumber,SaleStatus status,Instant createdAt,Instant completedAt,String cashier,
    List<ItemView> items,BigDecimal subtotalUsd,BigDecimal totalDiscountUsd,BigDecimal totalUsd,BigDecimal exchangeRate,List<PaymentView> payments,
    BigDecimal changeUsd,BigDecimal changeLbp,String note,Instant voidedAt,String voidReason,List<ReturnView> returns){}
- public record ReturnView(UUID id,BigDecimal refundUsd,BigDecimal refundLbp,String method,String reason,Instant createdAt){}
+ public record ReturnItemView(UUID saleItemId,int quantity,BigDecimal amountUsd,boolean restockable){}
+ public record ReturnView(UUID id,BigDecimal refundUsd,BigDecimal refundLbp,String method,String reason,Instant createdAt,List<ReturnItemView> items){}
 }

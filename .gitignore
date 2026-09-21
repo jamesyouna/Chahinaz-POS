@@ -5,3 +5,6 @@ data/
 !.env.example
 *.log
 .idea/
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
