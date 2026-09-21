@@ -12,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -30,6 +31,10 @@ public class SecurityConfig {
   @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(auth -> auth
         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+        .requestMatchers(HttpMethod.GET,"/api/public/**").permitAll()
+        .requestMatchers("/api/public/**").denyAll()
+        .requestMatchers(HttpMethod.GET,"/api/pos/**").hasAnyRole("ADMIN","MANAGER","TELLER")
+        .requestMatchers("/api/pos/**").denyAll()
         .requestMatchers("/api/management/**").hasAnyRole("ADMIN", "MANAGER")
         .requestMatchers("/api/**").authenticated()
         .anyRequest().denyAll())
