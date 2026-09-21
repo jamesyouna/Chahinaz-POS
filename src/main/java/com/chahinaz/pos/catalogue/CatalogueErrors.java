@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ResponseStatusException;
 
-@RestControllerAdvice(assignableTypes={ManagementCatalogueController.class,PublicCatalogueController.class,PosCatalogueController.class})
+@RestControllerAdvice(assignableTypes={ManagementCatalogueController.class,PublicCatalogueController.class,PosCatalogueController.class,com.chahinaz.pos.sales.SaleController.class})
 public class CatalogueErrors {
   public record ApiError(Instant timestamp,int status,String message,List<String> fields) {}
   @ExceptionHandler(ResponseStatusException.class) ResponseEntity<ApiError> status(ResponseStatusException e) {

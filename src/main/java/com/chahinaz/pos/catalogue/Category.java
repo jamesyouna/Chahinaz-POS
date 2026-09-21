@@ -17,4 +17,6 @@ public class Category {
     id = UUID.randomUUID(); this.name = name; this.description = description;
     createdAt = Instant.now(); updatedAt = createdAt;
   }
+  public UUID getId() { return id; }
+  public boolean isActive() { return active; }
 }

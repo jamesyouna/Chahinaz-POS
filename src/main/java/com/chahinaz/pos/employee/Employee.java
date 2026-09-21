@@ -22,4 +22,7 @@ public class Employee {
     this.passwordHash = passwordHash; this.role = role;
     this.createdAt = Instant.now(); this.updatedAt = this.createdAt;
   }
+  public UUID getId() { return id; }
+  public String getUsername() { return username; }
+  public String getDisplayName() { return displayName; }
 }

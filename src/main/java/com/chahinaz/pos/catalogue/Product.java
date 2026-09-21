@@ -29,4 +29,13 @@ public class Product {
     id = UUID.randomUUID(); this.sku = sku; this.category = category;
     createdAt = Instant.now(); updatedAt = createdAt;
   }
+  public UUID getId() { return id; }
+  public Category getCategory() { return category; }
+  public boolean isActive() { return active; }
+  public int getStockQuantity() { return stockQuantity; }
+  public void deductStock(int quantity) {
+    if (quantity <= 0 || quantity > stockQuantity) throw new IllegalArgumentException("Invalid stock deduction");
+    stockQuantity -= quantity;
+    updatedAt = Instant.now();
+  }
 }

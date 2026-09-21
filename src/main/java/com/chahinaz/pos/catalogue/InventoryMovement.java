@@ -13,10 +13,14 @@ public class InventoryMovement {
   @Column(name = "resulting_quantity", nullable = false) public int resultingQuantity;
   @Column(length = 500) public String reason;
   @Column(name = "actor_employee_id") public UUID actorEmployeeId;
+  @Column(name = "sale_id") public UUID saleId;
   @Column(name = "occurred_at", nullable = false) public Instant occurredAt;
   protected InventoryMovement() {}
   public InventoryMovement(Product product, MovementType type, int change, int resulting, String reason, UUID actor) {
     id = UUID.randomUUID(); this.product = product; movementType = type; quantityChange = change;
     resultingQuantity = resulting; this.reason = reason; actorEmployeeId = actor; occurredAt = Instant.now();
+  }
+  public InventoryMovement(Product product, MovementType type, int change, int resulting, String reason, UUID actor, UUID saleId) {
+    this(product,type,change,resulting,reason,actor); this.saleId=saleId;
   }
 }
