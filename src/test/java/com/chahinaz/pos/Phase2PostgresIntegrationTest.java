@@ -105,6 +105,18 @@ class Phase2PostgresIntegrationTest {
     mvc.perform(get("/api/public/catalogue/products/{id}",id)).andExpect(status().isNotFound());
     assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM audit_event WHERE action='PRODUCT_PUBLICATION_CHANGED' AND entity_id=?",Integer.class,id.toString()));
   }
+  @Test void inactiveCategoryHidesPublishedProductsUntilReactivated() throws Exception {
+    String name="Visibility"+unique(); UUID category=category(name); UUID product=product("SKU-"+unique(),null,category,2);
+    mvc.perform(patch("/api/management/products/{id}/publication",product).with(user("bootstrap").roles("ADMIN")).with(csrf())
+        .contentType(MediaType.APPLICATION_JSON).content("\"PUBLISHED\"")).andExpect(status().isOk());
+    mvc.perform(put("/api/management/categories/{id}",category).with(user("bootstrap").roles("MANAGER")).with(csrf())
+        .contentType(MediaType.APPLICATION_JSON).content(categoryBody(name,false))).andExpect(status().isOk());
+    mvc.perform(get("/api/public/catalogue/products/{id}",product)).andExpect(status().isNotFound());
+    mvc.perform(get("/api/public/catalogue/categories")).andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString(name))));
+    mvc.perform(put("/api/management/categories/{id}",category).with(user("bootstrap").roles("ADMIN")).with(csrf())
+        .contentType(MediaType.APPLICATION_JSON).content(categoryBody(name,true))).andExpect(status().isOk());
+    mvc.perform(get("/api/public/catalogue/products/{id}",product)).andExpect(status().isOk());
+  }
   @Test void stockMovementsAreAtomicAndQueriesIdentifyLowStock() throws Exception {
     UUID category=category("Category"+unique()); UUID id=product("SKU-"+unique(),null,category,3);
     mvc.perform(post("/api/management/products/{id}/restock",id).with(user("bootstrap").roles("ADMIN")).with(csrf())
