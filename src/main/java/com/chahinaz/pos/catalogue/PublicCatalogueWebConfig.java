@@ -12,7 +12,9 @@ public class PublicCatalogueWebConfig implements WebMvcConfigurer {
     this.origins=origins.split(",");
   }
   @Override public void addCorsMappings(CorsRegistry registry) {
-    registry.addMapping("/api/public/**").allowedOrigins(origins).allowedMethods("GET","HEAD","OPTIONS")
+    registry.addMapping("/api/public/catalogue/**").allowedOrigins(origins).allowedMethods("GET","HEAD","OPTIONS")
+        .allowedHeaders("Accept","Content-Type").allowCredentials(false).maxAge(3600);
+    registry.addMapping("/api/public/images/**").allowedOrigins(origins).allowedMethods("GET","HEAD","OPTIONS")
         .allowedHeaders("Accept","Content-Type").allowCredentials(false).maxAge(3600);
   }
 }

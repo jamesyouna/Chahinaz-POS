@@ -16,10 +16,10 @@ public class PublicCatalogueController {
   private final CatalogueService catalogue;
   private final ProductImageStorage images;
   public PublicCatalogueController(CatalogueService catalogue, ProductImageStorage images) { this.catalogue=catalogue; this.images=images; }
-  @GetMapping({"/categories","/catalogue/categories"}) public ResponseEntity<List<PublicCategoryView>> categories() {
+  @GetMapping("/catalogue/categories") public ResponseEntity<List<PublicCategoryView>> categories() {
     return ResponseEntity.ok().cacheControl(CacheControl.maxAge(Duration.ofMinutes(2)).cachePublic().mustRevalidate()).body(catalogue.publicCategories());
   }
-  @GetMapping({"/products","/catalogue/products"}) public ResponseEntity<List<PublicProductView>> products(
+  @GetMapping("/catalogue/products") public ResponseEntity<List<PublicProductView>> products(
       @RequestParam(required=false) String search, @RequestParam(required=false) UUID category,
       @RequestParam(required=false) Boolean featured, @RequestParam(required=false) Boolean newArrival,
       @RequestParam(required=false) Availability availability, @RequestParam(defaultValue="0") int page,
@@ -27,7 +27,7 @@ public class PublicCatalogueController {
     return ResponseEntity.ok().cacheControl(CacheControl.maxAge(Duration.ofSeconds(30)).cachePublic().mustRevalidate())
         .body(catalogue.publicProducts(search,category,featured,newArrival,availability,page,size,sort));
   }
-  @GetMapping({"/products/{id}","/catalogue/products/{id}"}) public ResponseEntity<PublicProductView> product(@PathVariable UUID id) {
+  @GetMapping("/catalogue/products/{id}") public ResponseEntity<PublicProductView> product(@PathVariable UUID id) {
     return ResponseEntity.ok().cacheControl(CacheControl.maxAge(Duration.ofSeconds(30)).cachePublic().mustRevalidate()).body(catalogue.publicProduct(id));
   }
   @GetMapping("/images/{key}") public ResponseEntity<byte[]> image(@PathVariable String key) {

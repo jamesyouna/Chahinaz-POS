@@ -93,16 +93,16 @@ class Phase2PostgresIntegrationTest {
         .contentType(MediaType.APPLICATION_JSON).content(productBody("SKU-"+unique(),null,category,0,"-1","2"))).andExpect(status().isBadRequest());
     mvc.perform(post("/api/management/products").with(user("bootstrap").roles("ADMIN")).with(csrf())
         .contentType(MediaType.APPLICATION_JSON).content(productBody("SKU-"+unique(),null,category,0,"1","-2"))).andExpect(status().isBadRequest());
-    mvc.perform(get("/api/public/products/{id}",id)).andExpect(status().isNotFound());
+    mvc.perform(get("/api/public/catalogue/products/{id}",id)).andExpect(status().isNotFound());
     mvc.perform(patch("/api/management/products/{id}/publication",id).with(user("bootstrap").roles("ADMIN")).with(csrf())
         .contentType(MediaType.APPLICATION_JSON).content("\"PUBLISHED\"")).andExpect(status().isOk());
-    String publicBody=mvc.perform(get("/api/public/products/{id}",id)).andExpect(status().isOk())
+    String publicBody=mvc.perform(get("/api/public/catalogue/products/{id}",id)).andExpect(status().isOk())
         .andExpect(jsonPath("$.sellingPriceUsd").value(2.5)).andExpect(jsonPath("$.costPriceUsd").doesNotExist())
         .andExpect(jsonPath("$.stockQuantity").doesNotExist()).andReturn().getResponse().getContentAsString();
     assertFalse(publicBody.contains("actorEmployeeId"));
     mvc.perform(patch("/api/management/products/{id}/active",id).with(user("bootstrap").roles("ADMIN")).with(csrf())
         .contentType(MediaType.APPLICATION_JSON).content("false")).andExpect(status().isOk());
-    mvc.perform(get("/api/public/products/{id}",id)).andExpect(status().isNotFound());
+    mvc.perform(get("/api/public/catalogue/products/{id}",id)).andExpect(status().isNotFound());
     assertEquals(1,jdbc.queryForObject("SELECT count(*) FROM audit_event WHERE action='PRODUCT_PUBLICATION_CHANGED' AND entity_id=?",Integer.class,id.toString()));
   }
   @Test void stockMovementsAreAtomicAndQueriesIdentifyLowStock() throws Exception {

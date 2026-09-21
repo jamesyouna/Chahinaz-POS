@@ -32,9 +32,10 @@ public class SecurityConfig {
   @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(auth -> auth
         .requestMatchers(HttpMethod.GET,"/","/index.html","/assets/**","/favicon.ico","/health","/sell","/sales","/registers","/reports","/inventory","/products","/admin").permitAll()
-        .requestMatchers(HttpMethod.OPTIONS,"/api/public/**").permitAll()
+        .requestMatchers(HttpMethod.GET,"/api/public/catalogue/**","/api/public/images/**").permitAll()
+        .requestMatchers(HttpMethod.HEAD,"/api/public/catalogue/**","/api/public/images/**").permitAll()
+        .requestMatchers(HttpMethod.OPTIONS,"/api/public/catalogue/**","/api/public/images/**").permitAll()
         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-        .requestMatchers(HttpMethod.GET,"/api/public/**").permitAll()
         .requestMatchers("/api/public/**").denyAll()
         .requestMatchers("/api/pos/sales/**").hasAnyRole("ADMIN","MANAGER","TELLER")
         .requestMatchers("/api/pos/sales").hasAnyRole("ADMIN","MANAGER","TELLER")

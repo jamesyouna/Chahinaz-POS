@@ -35,7 +35,7 @@ class Phase8PublicCatalogueIntegrationTest {
     product(toys,"Draft Secret","DRAFT",true,10,2,true,true);
     product(toys,"Inactive Secret","PUBLISHED",false,10,2,true,true);
     mvc.perform(get("/api/public/catalogue/products"))
-      .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(3))
+      .andExpect(status().isOk()).andExpect(header().doesNotExist("Location")).andExpect(jsonPath("$.length()").value(3))
       .andExpect(jsonPath("$[?(@.name=='Public Car')].availability").value("IN_STOCK"))
       .andExpect(jsonPath("$[?(@.name=='Low Item')].availability").value("LOW_STOCK"))
       .andExpect(jsonPath("$[?(@.name=='Sold Item')].availability").value("OUT_OF_STOCK"))
@@ -44,11 +44,20 @@ class Phase8PublicCatalogueIntegrationTest {
     mvc.perform(get("/api/public/catalogue/products").param("search","Public").param("category",toys.toString()).param("featured","true").param("newArrival","true"))
       .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(in.toString()));
     mvc.perform(get("/api/public/catalogue/products").param("page","1").param("size","2")).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
+    mvc.perform(get("/api/public/catalogue/categories")).andExpect(status().isOk()).andExpect(header().doesNotExist("Location"))
+      .andExpect(jsonPath("$[?(@.id=='"+toys+"')].name").exists());
+    mvc.perform(get("/api/public/catalogue/products/{id}",in)).andExpect(status().isOk()).andExpect(header().doesNotExist("Location"));
+    mvc.perform(head("/api/public/catalogue/products")).andExpect(status().isOk()).andExpect(header().doesNotExist("Location"));
   }
   @Test void corsIsNarrowAndPublicApiIsReadOnly()throws Exception{
     mvc.perform(options("/api/public/catalogue/products").header("Origin","https://chahinazdollar.store").header("Access-Control-Request-Method","GET"))
       .andExpect(status().isOk()).andExpect(header().string("Access-Control-Allow-Origin","https://chahinazdollar.store"));
     mvc.perform(options("/api/public/catalogue/products").header("Origin","https://evil.example").header("Access-Control-Request-Method","GET")).andExpect(status().isForbidden());
     mvc.perform(post("/api/public/catalogue/products")).andExpect(status().isForbidden());
+    mvc.perform(get("/api/public/products")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login"));
+    mvc.perform(get("/api/auth/me")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login"));
+    mvc.perform(get("/api/pos/products")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login"));
+    mvc.perform(get("/api/management/products")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login"));
+    mvc.perform(post("/api/management/products")).andExpect(status().isForbidden());
   }
 }
