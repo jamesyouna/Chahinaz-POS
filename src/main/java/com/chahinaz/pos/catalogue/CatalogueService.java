@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.Comparator;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class CatalogueService {
   private static String sku(String value) { return value.trim().toUpperCase(Locale.ROOT); }
 
   @Transactional(readOnly=true) public List<CategoryView> categories() { return categories.findAll().stream().map(CategoryView::of).toList(); }
-  @Transactional(readOnly=true) public List<CategoryView> publicCategories() { return categories.findByActiveTrueOrderByNameAsc().stream().map(CategoryView::of).toList(); }
+  @Transactional(readOnly=true) public List<PublicCategoryView> publicCategories() { return categories.findByActiveTrueOrderByNameAsc().stream().map(PublicCategoryView::of).toList(); }
   @Transactional public CategoryView createCategory(CategoryInput input, Authentication auth) {
     String n=name(input.name());
     if (categories.existsByNameIgnoreCase(n)) throw new ResponseStatusException(HttpStatus.CONFLICT,"Category name already exists");
@@ -52,7 +53,28 @@ public class CatalogueService {
   @Transactional(readOnly=true) public List<ProductView> products() { return products.findAll().stream().map(ProductView::of).toList(); }
   @Transactional(readOnly=true) public ProductView productView(UUID id) { return ProductView.of(product(id)); }
   @Transactional(readOnly=true) public List<PublicProductView> publicProducts() {
-    return products.findByPublicationStatusAndActiveTrueAndCategoryActiveTrueOrderByNameAsc(PublicationStatus.PUBLISHED).stream().map(PublicProductView::of).toList();
+    return publicProducts(null,null,null,null,null,0,100,"name");
+  }
+  @Transactional(readOnly=true) public List<PublicProductView> publicProducts(String search, UUID category, Boolean featured,
+      Boolean newArrival, Availability availability, int page, int size, String sort) {
+    if (page < 0 || size < 1 || size > 200) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid pagination");
+    String term=search==null?null:search.trim().toLowerCase(Locale.ROOT);
+    Comparator<Product> order=switch(sort) {
+      case "price" -> Comparator.comparing(p -> p.sellingPriceUsd);
+      case "-price" -> Comparator.comparing((Product p) -> p.sellingPriceUsd).reversed();
+      case "updated" -> Comparator.comparing((Product p) -> p.updatedAt).reversed();
+      case "name" -> Comparator.comparing(p -> p.name.toLowerCase(Locale.ROOT));
+      default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unsupported sort");
+    };
+    return products.findByPublicationStatusAndActiveTrueAndCategoryActiveTrueOrderByNameAsc(PublicationStatus.PUBLISHED).stream()
+        .filter(p -> term==null || term.isBlank() || p.name.toLowerCase(Locale.ROOT).contains(term)
+            || (p.description!=null && p.description.toLowerCase(Locale.ROOT).contains(term))
+            || p.sku.toLowerCase(Locale.ROOT).contains(term))
+        .filter(p -> category==null || p.category.getId().equals(category))
+        .filter(p -> featured==null || p.featured==featured)
+        .filter(p -> newArrival==null || p.newArrival==newArrival)
+        .filter(p -> availability==null || CatalogueDtos.availability(p)==availability)
+        .sorted(order).skip((long)page*size).limit(size).map(PublicProductView::of).toList();
   }
   @Transactional(readOnly=true) public List<PublicProductView> posProducts() {
     return products.findByActiveTrueAndCategoryActiveTrueOrderByNameAsc().stream().map(PublicProductView::of).toList();

@@ -6,6 +6,9 @@ server:
     session:
       cookie:
         secure: ${POS_SECURE_COOKIE:false}
+pos:
+  public-catalogue:
+    allowed-origins: ${POS_PUBLIC_CATALOGUE_ORIGINS:https://chahinazdollar.store,https://www.chahinazdollar.store}
 logging:
   file:
     name: ${POS_LOG_FILE:./logs/chahinaz-pos.log}

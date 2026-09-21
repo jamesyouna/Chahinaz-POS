@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 
 @Configuration
 @EnableWebSecurity
@@ -31,6 +32,7 @@ public class SecurityConfig {
   @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(auth -> auth
         .requestMatchers(HttpMethod.GET,"/","/index.html","/assets/**","/favicon.ico","/health","/sell","/sales","/registers","/reports","/inventory","/products","/admin").permitAll()
+        .requestMatchers(HttpMethod.OPTIONS,"/api/public/**").permitAll()
         .requestMatchers("/api/admin/**").hasRole("ADMIN")
         .requestMatchers(HttpMethod.GET,"/api/public/**").permitAll()
         .requestMatchers("/api/public/**").denyAll()
@@ -43,6 +45,7 @@ public class SecurityConfig {
         .requestMatchers("/api/management/**").hasAnyRole("ADMIN", "MANAGER")
         .requestMatchers("/api/**").authenticated()
         .anyRequest().denyAll())
+      .cors(Customizer.withDefaults())
       .formLogin(form -> form.permitAll())
       .logout(logout -> logout.logoutUrl("/logout").invalidateHttpSession(true).deleteCookies("JSESSIONID"))
       .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
