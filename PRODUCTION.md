@@ -21,10 +21,12 @@ Maven runs `npm ci` and `npm run build`, copies `frontend/dist` into `BOOT-INF/c
 
 1. Install Docker Desktop with WSL 2 and enable **Start Docker Desktop when you sign in**.
 2. Copy the project release folder to `C:\ChahinazPOS`.
-3. Copy `.env.production.example` to `.env.production`. Replace both password placeholders with different long random passwords. Keep this file local and out of OneDrive/Google Drive.
+3. Copy `.env.production.example` to `.env.production`. Replace both password placeholders with different long random passwords. Keep this file local and out of OneDrive/Google Drive. Use `POS_DB_NAME=chahinaz_pos`, `POS_DB_USER=chahinaz_pos_app`, `POS_BOOTSTRAP_ADMIN_USERNAME=admin`, and a release image value such as `POS_VERSION=0.1.0`. The launcher rejects known test identities and placeholder credentials.
 4. Run `docker compose --env-file .env.production -f compose.production.yaml build` once as the installer/developer.
 5. Double-click `Start-ChahinazPOS.bat`. Flyway creates or upgrades the database without deleting existing data.
 6. Sign in with the externally configured bootstrap Admin, create the permanent Admin account if required, then remove the bootstrap password from `.env.production` after confirming another Admin works. Existing bootstrap accounts are not recreated or reset.
+
+PostgreSQL initialization variables only create a database and role when its data directory is empty. Changing those values cannot rename an existing database or role in an initialized volume; create the production database and role explicitly when promoting an existing test installation.
 7. Test a sale, browser receipt printing, register close, backup, and a restore into `chahinaz_pos_restore`.
 8. Optionally run `powershell -ExecutionPolicy Bypass -File scripts\Install-Automation.ps1 -BackupTime 02:00` from an Administrator PowerShell.
 
