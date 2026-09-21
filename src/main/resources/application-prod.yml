@@ -1,0 +1,19 @@
+server:
+  address: ${POS_BIND_ADDRESS:127.0.0.1}
+  port: ${POS_APP_PORT:8080}
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: ${POS_SECURE_COOKIE:false}
+logging:
+  file:
+    name: ${POS_LOG_FILE:./logs/chahinaz-pos.log}
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+      total-size-cap: 500MB
+  level:
+    root: INFO
+    org.springframework.security: WARN

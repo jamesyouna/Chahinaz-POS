@@ -3,7 +3,7 @@
   <parent><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId><version>4.1.1</version><relativePath/></parent>
   <groupId>com.chahinaz</groupId><artifactId>pos</artifactId><version>0.1.0-SNAPSHOT</version>
   <name>Chahinaz POS</name><description>Central retail backend and POS foundation</description>
-  <properties><java.version>21</java.version></properties>
+  <properties><java.version>21</java.version><skip.frontend>false</skip.frontend></properties>
   <dependencies>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-webmvc</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
@@ -19,5 +19,9 @@
     <dependency><groupId>org.testcontainers</groupId><artifactId>testcontainers-postgresql</artifactId><version>2.0.5</version><scope>test</scope></dependency>
     <dependency><groupId>org.testcontainers</groupId><artifactId>testcontainers-junit-jupiter</artifactId><version>2.0.5</version><scope>test</scope></dependency>
   </dependencies>
-  <build><plugins><plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin></plugins></build>
+  <build><plugins>
+    <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin>
+    <plugin><groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.5.0</version><executions><execution><id>frontend-install</id><phase>generate-resources</phase><goals><goal>exec</goal></goals><configuration><skip>${skip.frontend}</skip><workingDirectory>${project.basedir}/frontend</workingDirectory><executable>npm</executable><arguments><argument>ci</argument></arguments></configuration></execution><execution><id>frontend-build</id><phase>generate-resources</phase><goals><goal>exec</goal></goals><configuration><skip>${skip.frontend}</skip><workingDirectory>${project.basedir}/frontend</workingDirectory><executable>npm</executable><arguments><argument>run</argument><argument>build</argument></arguments></configuration></execution></executions></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-resources-plugin</artifactId><executions><execution><id>copy-frontend</id><phase>process-resources</phase><goals><goal>copy-resources</goal></goals><configuration><outputDirectory>${project.build.outputDirectory}/static</outputDirectory><resources><resource><directory>${project.basedir}/frontend/dist</directory><filtering>false</filtering></resource></resources></configuration></execution></executions></plugin>
+  </plugins></build>
 </project>

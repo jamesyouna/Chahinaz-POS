@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: chahinaz-pos-production-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POS_DB_NAME}
+      POSTGRES_USER: ${POS_DB_USER}
+      POSTGRES_PASSWORD: ${POS_DB_PASSWORD}
+    volumes:
+      - chahinaz_pos_production_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+  app:
+    build: .
+    image: chahinaz-pos:${POS_VERSION:-local}
+    container_name: chahinaz-pos-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      POS_DB_HOST: postgres
+      POS_DB_PORT: 5432
+      POS_DB_NAME: ${POS_DB_NAME}
+      POS_DB_USER: ${POS_DB_USER}
+      POS_DB_PASSWORD: ${POS_DB_PASSWORD}
+      POS_BOOTSTRAP_ADMIN_USERNAME: ${POS_BOOTSTRAP_ADMIN_USERNAME}
+      POS_BOOTSTRAP_ADMIN_PASSWORD: ${POS_BOOTSTRAP_ADMIN_PASSWORD}
+      POS_STORE_TIMEZONE: ${POS_STORE_TIMEZONE:-Asia/Beirut}
+      POS_SECURE_COOKIE: ${POS_SECURE_COOKIE:-false}
+      POS_BIND_ADDRESS: 0.0.0.0
+      POS_LOG_FILE: /app/logs/chahinaz-pos.log
+      POS_IMAGE_DIR: /app/data/product-images
+    ports:
+      - "127.0.0.1:${POS_APP_PORT:-8080}:8080"
+    volumes:
+      - ./data/product-images:/app/data/product-images
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8080/health | grep -q UP"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+volumes:
+  chahinaz_pos_production_data:
+
