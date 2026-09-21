@@ -1,10 +1,10 @@
-# Chahina'z POS — Phase 2 backend foundation
+# Chahina'z POS — Phase 4 backend
 
 This is a **new, separate** POS/backend project. The existing customer website has not been modified. The architecture is in [ARCHITECTURE.md](ARCHITECTURE.md); deployment planning is in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Current scope
 
-Spring Boot 4.1.1 / Java 21, PostgreSQL, Flyway migrations, employee roles, bcrypt password hashing, session login, CSRF, catalogue, inventory movements, image storage, and audit records. This is **not yet a usable store POS**. Sales, checkout, payments, shifts, reports, and the frontend are outside Phase 2.
+Spring Boot 4.1.1 / Java 21, PostgreSQL, Flyway migrations, employee roles, bcrypt password hashing, session login, CSRF, catalogue, inventory, sales, register sessions, held sales, returns, controlled discounts, price overrides, manager approvals, and audit records. The final POS frontend and advanced reporting remain future work.
 
 ## Development requirements
 
@@ -61,4 +61,49 @@ Items snapshot SKU, name, and unit price when first added. The server calculates
 
 Completion accepts `paidUsd`, `paidLbp`, `whishUsd`, and `whishManuallyConfirmed`; omitted amounts are zero. USD and Whish accept at most two decimal places. LBP is an integer amount. The total USD value is converted to LBP using the transaction rate and rounded to the nearest 1 LBP with `HALF_UP`. Each USD payment component is converted the same way. Insufficient value is rejected. Change is deterministic: the largest whole USD amount is returned first, and the exact remaining integer LBP amount is returned as `changeLbp`. This does not assume that every possible remainder matches a physical denomination; denomination guidance belongs in the future cashier UI. Whish is stored as `WHISH_MANUAL` only after the cashier explicitly confirms it; no external verification is claimed.
 
-Example completion request: `{ "paidUsd": 5.00, "paidLbp": 452500, "whishUsd": 0, "whishManuallyConfirmed": false }`. The receipt response includes receipt number, timestamps, cashier display name, immutable item snapshots, totals, exchange rate, payment components, change, and note. Refunds, returns, discounts, void workflow, price overrides, hardware, and frontend work remain out of scope.
+Example completion request: `{ "paidUsd": 5.00, "paidLbp": 452500, "whishUsd": 0, "whishManuallyConfirmed": false }`. The receipt response includes receipt number, timestamps, cashier display name, immutable item snapshots, totals, exchange rate, payment components, change, and note.
+
+## Phase 4 store operations
+
+Flyway V4 adds register sessions, manager approvals, immutable return records, sale lifecycle details, discount and override snapshots, and return references on inventory movements. Existing V1–V3 migrations remain unchanged.
+
+### Register lifecycle
+
+All authenticated store roles can use `POST /api/pos/registers/open`, `GET /api/pos/registers/current`, `GET /api/pos/registers`, and `POST /api/pos/registers/{id}/close`. Only one register may be open per employee. Opening and closing cash must be nonnegative. Closing snapshots expected cash from completed cash sales minus cash refunds, actual cash, and the difference in USD and LBP. A teller needs an open register before completing a cash sale; Whish-only sales do not require a cash drawer.
+
+Example requests:
+
+```json
+{"openingCashUsd":100.00,"openingCashLbp":5000000}
+{"actualCashUsd":142.00,"actualCashLbp":6500000,"note":"Counted twice"}
+```
+
+### Sale lifecycle and receipts
+
+An `OPEN` sale can be held at `POST /api/pos/sales/{id}/hold`, listed at `GET /api/pos/sales/held`, resumed at `POST /api/pos/sales/{id}/resume`, or voided with a reason at `POST /api/pos/sales/{id}/void`. Held sales reserve no stock and create no revenue. Only `OPEN` and `HELD` sales may be voided. A completed sale remains immutable and corrections use returns.
+
+Receipts preserve the cashier name, item name and SKU, original and effective unit prices, line discounts, override approval, subtotal, combined discounts, final total, payment breakdown, exchange rate, change, void information, and linked returns.
+
+### Discounts, overrides, and approvals
+
+Apply a line discount with `POST /api/pos/sales/{saleId}/items/{itemId}/discount`, a whole-sale discount with `POST /api/pos/sales/{saleId}/discount`, and a price override with `POST /api/pos/sales/{saleId}/items/{itemId}/price-override`. Amounts use two-decimal USD arithmetic and cannot make a line or sale negative. Price overrides affect only the sale item and retain its original price.
+
+Set `pos.teller_discount_max_percent` through the existing Admin settings endpoint to define teller authority from 0 through 100. Discounts above that percentage and all teller price overrides require a single-use approval created by a signed-in Manager or Admin at `POST /api/management/approvals`. The approval is bound to the requesting employee, operation, and sale; a client-supplied boolean cannot authorize an action.
+
+Approval example:
+
+```json
+{"operationType":"PRICE_OVERRIDE","requestingUsername":"teller1","targetType":"sale","targetId":"00000000-0000-0000-0000-000000000000","reason":"Damaged package"}
+```
+
+### Returns and refunds
+
+Managers and Admins create returns at `POST /api/management/sales/{saleId}/returns`. The original completed sale is never rewritten. Each return identifies its original sale items, quantities, processor, reason, refund method, and time. Refunds use the item total snapshot and the sale's exchange rate snapshot. Returned quantity cannot exceed the unreturned sold quantity. Restockable items restore stock and create linked `RETURN` inventory movements; damaged or otherwise non-restockable items do not change sellable stock.
+
+Cash refunds require an open register. A Whish refund uses `WHISH_MANUAL` and requires `whishManuallyRecorded: true`; the system records the external action and does not claim automatic verification.
+
+```json
+{"items":[{"saleItemId":"00000000-0000-0000-0000-000000000000","quantity":1,"restockable":true}],"refundMethod":"USD_CASH","whishManuallyRecorded":false,"reason":"Customer return"}
+```
+
+Run `mvn clean verify` with Docker Desktop running to execute all PostgreSQL integration and security tests for Phases 1–4.

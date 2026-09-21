@@ -35,6 +35,7 @@ public class SecurityConfig {
         .requestMatchers("/api/public/**").denyAll()
         .requestMatchers("/api/pos/sales/**").hasAnyRole("ADMIN","MANAGER","TELLER")
         .requestMatchers("/api/pos/sales").hasAnyRole("ADMIN","MANAGER","TELLER")
+        .requestMatchers("/api/pos/registers/**").hasAnyRole("ADMIN","MANAGER","TELLER")
         .requestMatchers(HttpMethod.GET,"/api/pos/**").hasAnyRole("ADMIN","MANAGER","TELLER")
         .requestMatchers("/api/pos/**").denyAll()
         .requestMatchers("/api/management/**").hasAnyRole("ADMIN", "MANAGER")

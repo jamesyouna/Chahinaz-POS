@@ -15,6 +15,13 @@ public class SaleController {
  @PutMapping("/{id}/items/{itemId}") public ReceiptView quantity(@PathVariable UUID id,@PathVariable UUID itemId,@Valid @RequestBody QuantityInput in,Authentication a){return service.quantity(id,itemId,in,a);}
  @DeleteMapping("/{id}/items/{itemId}") public ReceiptView remove(@PathVariable UUID id,@PathVariable UUID itemId,Authentication a){return service.remove(id,itemId,a);}
  @PostMapping("/{id}/complete") public ReceiptView complete(@PathVariable UUID id,@Valid @RequestBody CompleteSaleInput in,Authentication a){return service.complete(id,in,a);}
+ @PostMapping("/{id}/hold") public ReceiptView hold(@PathVariable UUID id,Authentication a){return service.hold(id,a);}
+ @PostMapping("/{id}/resume") public ReceiptView resume(@PathVariable UUID id,Authentication a){return service.resume(id,a);}
+ @PostMapping("/{id}/void") public ReceiptView voidSale(@PathVariable UUID id,@Valid @RequestBody ReasonInput in,Authentication a){return service.voidSale(id,in,a);}
+ @PostMapping("/{id}/items/{itemId}/discount") public ReceiptView lineDiscount(@PathVariable UUID id,@PathVariable UUID itemId,@Valid @RequestBody DiscountInput in,Authentication a){return service.lineDiscount(id,itemId,in,a);}
+ @PostMapping("/{id}/discount") public ReceiptView saleDiscount(@PathVariable UUID id,@Valid @RequestBody DiscountInput in,Authentication a){return service.saleDiscount(id,in,a);}
+ @PostMapping("/{id}/items/{itemId}/price-override") public ReceiptView override(@PathVariable UUID id,@PathVariable UUID itemId,@Valid @RequestBody PriceOverrideInput in,Authentication a){return service.overridePrice(id,itemId,in,a);}
  @GetMapping("/{id}") public ReceiptView get(@PathVariable UUID id,Authentication a){return service.get(id,a);}
  @GetMapping public Page<ReceiptView> history(@PageableDefault(size=25,sort="createdAt",direction=Sort.Direction.DESC) Pageable p,Authentication a){return service.history(p,a);}
+ @GetMapping("/held") public java.util.List<ReceiptView> held(Authentication a){return service.held(a);}
 }

@@ -1,0 +1,1 @@
+package com.chahinaz.pos.operations;import java.util.UUID;import org.springframework.data.jpa.repository.*;public interface SaleReturnItemRepository extends JpaRepository<SaleReturnItem,UUID>{@Query("select coalesce(sum(i.quantity),0) from SaleReturnItem i where i.saleItem.id=:id")long returnedQuantity(UUID id);}

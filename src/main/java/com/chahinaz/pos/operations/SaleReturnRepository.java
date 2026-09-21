@@ -1,0 +1,1 @@
+package com.chahinaz.pos.operations;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface SaleReturnRepository extends JpaRepository<SaleReturn,UUID>{List<SaleReturn> findByOriginalSaleIdOrderByCreatedAt(UUID id);}

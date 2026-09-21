@@ -20,7 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
-  private static final Set<String> ALLOWED_SETTINGS = Set.of("store.name", "store.slogan", "store.phone", "store.address", "currency.usd_to_lbp", "inventory.low_stock_default");
+  private static final Set<String> ALLOWED_SETTINGS = Set.of("store.name", "store.slogan", "store.phone", "store.address", "currency.usd_to_lbp", "inventory.low_stock_default", "pos.teller_discount_max_percent");
   private final EmployeeRepository employees;
   private final SettingRepository settings;
   private final PasswordEncoder encoder;
@@ -71,6 +71,10 @@ public class AdminController {
     if (key.equals("inventory.low_stock_default")) {
       try { if (Integer.parseInt(input.value()) < 0) throw new NumberFormatException(); }
       catch (NumberFormatException ex) { throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Low-stock threshold must be nonnegative"); }
+    }
+    if (key.equals("pos.teller_discount_max_percent")) {
+      try { BigDecimal percent=new BigDecimal(input.value()); if (percent.signum()<0||percent.compareTo(BigDecimal.valueOf(100))>0) throw new NumberFormatException(); }
+      catch (NumberFormatException ex) { throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Teller discount percentage must be between 0 and 100"); }
     }
     StoreSetting s = settings.findById(key).orElseGet(() -> new StoreSetting(key,input.value(),actor(auth)));
     String before = s.value; s.value=input.value(); s.updatedBy=actor(auth); s.updatedAt=Instant.now(); settings.save(s);

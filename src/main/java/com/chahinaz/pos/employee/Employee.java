@@ -25,4 +25,5 @@ public class Employee {
   public UUID getId() { return id; }
   public String getUsername() { return username; }
   public String getDisplayName() { return displayName; }
+  public Role getRole() { return role; }
 }

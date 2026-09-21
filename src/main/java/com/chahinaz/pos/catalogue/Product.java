@@ -38,4 +38,5 @@ public class Product {
     stockQuantity -= quantity;
     updatedAt = Instant.now();
   }
+  public void restoreStock(int quantity) { if (quantity <= 0) throw new IllegalArgumentException("Invalid stock restoration"); stockQuantity=Math.addExact(stockQuantity,quantity); updatedAt=Instant.now(); }
 }

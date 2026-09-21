@@ -14,6 +14,7 @@ public class InventoryMovement {
   @Column(length = 500) public String reason;
   @Column(name = "actor_employee_id") public UUID actorEmployeeId;
   @Column(name = "sale_id") public UUID saleId;
+  @Column(name = "return_id") public UUID returnId;
   @Column(name = "occurred_at", nullable = false) public Instant occurredAt;
   protected InventoryMovement() {}
   public InventoryMovement(Product product, MovementType type, int change, int resulting, String reason, UUID actor) {
@@ -23,4 +24,5 @@ public class InventoryMovement {
   public InventoryMovement(Product product, MovementType type, int change, int resulting, String reason, UUID actor, UUID saleId) {
     this(product,type,change,resulting,reason,actor); this.saleId=saleId;
   }
+  public InventoryMovement forReturn(UUID returnId) { this.returnId=returnId; return this; }
 }
